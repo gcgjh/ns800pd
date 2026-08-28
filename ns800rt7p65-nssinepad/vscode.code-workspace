@@ -1,0 +1,127 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../../../../components/drivers/can",
+            "name": "rtthread/components/drivers/can"
+        },
+        {
+            "path": "../../../../components/drivers/core",
+            "name": "rtthread/components/drivers/core"
+        },
+        {
+            "path": "../../../../components/drivers/include",
+            "name": "rtthread/components/drivers/include"
+        },
+        {
+            "path": "../../../../components/drivers/ipc",
+            "name": "rtthread/components/drivers/ipc"
+        },
+        {
+            "path": "../../../../components/drivers/pin",
+            "name": "rtthread/components/drivers/pin"
+        },
+        {
+            "path": "../../../../components/drivers/serial",
+            "name": "rtthread/components/drivers/serial"
+        },
+        {
+            "path": "../../../../components/drivers/smp_call",
+            "name": "rtthread/components/drivers/smp_call"
+        },
+        {
+            "path": "../../../../components/finsh",
+            "name": "rtthread/components/finsh"
+        },
+        {
+            "path": "../../../../components/libc/compilers/common",
+            "name": "rtthread/components/libc/compilers/common"
+        },
+        {
+            "path": "../../../../components/libc/compilers/common/include",
+            "name": "rtthread/components/libc/compilers/common/include"
+        },
+        {
+            "path": "../../../../components/libc/compilers/newlib",
+            "name": "rtthread/components/libc/compilers/newlib"
+        },
+        {
+            "path": "../../../../components/libc/posix/io/epoll",
+            "name": "rtthread/components/libc/posix/io/epoll"
+        },
+        {
+            "path": "../../../../components/libc/posix/io/eventfd",
+            "name": "rtthread/components/libc/posix/io/eventfd"
+        },
+        {
+            "path": "../../../../components/libc/posix/io/poll",
+            "name": "rtthread/components/libc/posix/io/poll"
+        },
+        {
+            "path": "../../../../components/libc/posix/ipc",
+            "name": "rtthread/components/libc/posix/ipc"
+        },
+        {
+            "path": "../../../../components/net/utest",
+            "name": "rtthread/components/net/utest"
+        },
+        {
+            "path": "../../../../include",
+            "name": "rtthread/include"
+        },
+        {
+            "path": "../../../../libcpu/arm/common",
+            "name": "rtthread/libcpu/arm/common"
+        },
+        {
+            "path": "../../../../libcpu/arm/cortex-m7",
+            "name": "rtthread/libcpu/arm/cortex-m7"
+        },
+        {
+            "path": "../../../../src",
+            "name": "rtthread/src"
+        },
+        {
+            "path": "../../../../src/klibc",
+            "name": "rtthread/src/klibc"
+        },
+        {
+            "path": "../libraries/HAL_Drivers",
+            "name": "rtthread/libraries/HAL_Drivers"
+        },
+        {
+            "path": "../libraries/HAL_Drivers/drivers",
+            "name": "rtthread/libraries/HAL_Drivers/drivers"
+        },
+        {
+            "path": "../libraries/HAL_Drivers/drivers/config",
+            "name": "rtthread/libraries/HAL_Drivers/drivers/config"
+        },
+        {
+            "path": "../libraries/novosns-series-latest/NS800RT7XXX/Device/Inc",
+            "name": "rtthread/libraries/novosns-series-latest/NS800RT7XXX/Device/Inc"
+        },
+        {
+            "path": "../libraries/novosns-series-latest/NS800RT7XXX/Device/Src",
+            "name": "rtthread/libraries/novosns-series-latest/NS800RT7XXX/Device/Src"
+        },
+        {
+            "path": "../libraries/novosns-series-latest/NS800RT7XXX/Device/Src/gcc",
+            "name": "rtthread/libraries/novosns-series-latest/NS800RT7XXX/Device/Src/gcc"
+        },
+        {
+            "path": "../libraries/novosns-series-latest/NS800RT7XXX/StdDriver/Inc",
+            "name": "rtthread/libraries/novosns-series-latest/NS800RT7XXX/StdDriver/Inc"
+        },
+        {
+            "path": "../libraries/novosns-series-latest/NS800RT7XXX/StdDriver/Inc/ti",
+            "name": "rtthread/libraries/novosns-series-latest/NS800RT7XXX/StdDriver/Inc/ti"
+        },
+        {
+            "path": "../libraries/novosns-series-latest/NS800RT7XXX/StdDriver/Src",
+            "name": "rtthread/libraries/novosns-series-latest/NS800RT7XXX/StdDriver/Src"
+        }
+    ]
+}
