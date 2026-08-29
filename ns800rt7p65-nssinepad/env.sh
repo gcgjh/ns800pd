@@ -56,5 +56,3 @@ fi
 if [ "$bootstrap_status" -ne 0 ]; then
     return "$bootstrap_status" 2>/dev/null || exit "$bootstrap_status"
 fi
-
-cd ns800rt7p65-nssinepad

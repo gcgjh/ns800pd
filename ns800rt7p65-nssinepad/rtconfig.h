@@ -298,6 +298,10 @@
 
 /* end of Kendryte SDK */
 
+/* MM32 HAL & SDK Drivers */
+
+/* end of MM32 HAL & SDK Drivers */
+
 /* WCH HAL & SDK Drivers */
 
 /* end of WCH HAL & SDK Drivers */
@@ -335,6 +339,10 @@
 #define PKG_USING_NOVOSNS_SERIES_DRIVER
 #define PKG_USING_NOVOSNS_SERIES_DRIVER_LATEST_VERSION
 /* end of NOVOSNS Drivers */
+
+/* N32 Drivers */
+
+/* end of N32 Drivers */
 /* end of HAL & SDK Drivers */
 
 /* sensors drivers */
