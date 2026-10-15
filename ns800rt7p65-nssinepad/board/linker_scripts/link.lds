@@ -5,10 +5,17 @@
  *   FLASH      0x08000000  512K
  *   VT_DTCM    0x20000000    1K
  *   DTCM       0x20000400   71K  (general RW/ZI/stack region)
- *   RT_HEAP    0x20012000   16K  (reserved for rt_system_heap_init)
- *   DTCM_EXT   0x20016000   40K  (extra named sections only)
- *   SRAM1      0x20100000  128K
- *   SRAM2      0x20120000  128K
+ *   RT_HEAP    0x20012000   56K  (reserved for rt_system_heap_init)
+ *                              ^ 原为 16K，因 LVGL widgets demo 需大量堆内存，
+ *                                已把原 DTCM_EXT(40K, 空置) 并入堆区。
+ *                                须与 board/board.h 的 HEAP_END 保持同步。
+ *   SRAM12     0x20100000  256K  SRAM1+SRAM2 物理连续，合并成一个 region：
+ *                                 · 头部 64K  → LVGL 内存池（.lvgl_pool）
+ *                                   （实测只用了 ~16K，msh `lvmem` 可查）
+ *                                 · 其后      → 全屏壁纸缓冲（.wall_buf, 150K）
+ *                                   240x320 RGB565，对应 wallpaper_store.h
+ *                                 SRAM1/SRAM2 单独看各 128K，放不下跨界的 150K 缓冲，
+ *                                 故必须合并 —— 见下面 MEMORY 段注释。
  *   BKPSRAM    0x400B7000    4K
  */
 
@@ -21,10 +28,8 @@ MEMORY
     FLASH    (rx)  : ORIGIN = 0x08000000, LENGTH = 512K
     VT_DTCM  (rwx) : ORIGIN = 0x20000000, LENGTH = 0x400
     DTCM     (rwx) : ORIGIN = 0x20000400, LENGTH = 0x11C00
-    RT_HEAP  (rwx) : ORIGIN = 0x20012000, LENGTH = 0x4000
-    DTCM_EXT (rwx) : ORIGIN = 0x20016000, LENGTH = 0xA000
-    SRAM1    (rwx) : ORIGIN = 0x20100000, LENGTH = 0x20000
-    SRAM2    (rwx) : ORIGIN = 0x20120000, LENGTH = 0x20000
+    RT_HEAP  (rwx) : ORIGIN = 0x20012000, LENGTH = 0xE000
+    SRAM12   (rwx) : ORIGIN = 0x20100000, LENGTH = 0x40000
     BKPSRAM  (rwx) : ORIGIN = 0x400B7000, LENGTH = 0x1000
 }
 
@@ -134,21 +139,41 @@ SECTIONS
         . = ALIGN(4);
     } > VT_DTCM
 
-    .sram1 (NOLOAD) :
+    /* ── SRAM12 = SRAM1 + SRAM2（物理地址连续，0x20100000..0x2013FFFF，共 256K）──
+     * 合并原因：全屏壁纸缓冲 240x320x2 = 150K，跨 0x20120000 边界，
+     *           单独用 SRAM1 或 SRAM2（各 128K）都放不下。
+     * 硬约束：本段必须是 SRAM12 里的第一个输出段 —— 池地址 0x20100000 是
+     *         lv_conf.h 的 LV_MEM_ADR 硬编码值，偏一点就对不上。
+     * 运行时由 lv_port_disp.c 的 lvgl_pool_selftest() 校验。 */
+    .lvgl_pool (NOLOAD) :
     {
-        . = ALIGN(4);
-        *(.sram1)
-        *(.sram1*)
-        . = ALIGN(4);
-    } > SRAM1
+        . = ALIGN(8);
+        PROVIDE(__lvgl_pool_start = .);
+        . = . + 0x10000;                    /* 64K，见 lv_conf.h 的 LV_MEM_SIZE */
+        . = ALIGN(8);
+        PROVIDE(__lvgl_pool_end = .);
+    } > SRAM12
 
+    /* 全屏壁纸缓冲（240x320 RGB565 = 150K）。紧跟池之后，起始 0x20110000。
+     * NOLOAD：不占 flash，启动也不清零（开机由 wallpaper_store 从外置 flash 填）。 */
+    .wall_buf (NOLOAD) :
+    {
+        . = ALIGN(8);
+        PROVIDE(__wall_buf_start = .);
+        *(.wall_buf)
+        *(.wall_buf*)
+        . = ALIGN(8);
+        PROVIDE(__wall_buf_end = .);
+    } > SRAM12
+
+    /* 通用 sram2 段（历史遗留，当前无使用者；保留以免别处引用了它） */
     .sram2 (NOLOAD) :
     {
         . = ALIGN(4);
         *(.sram2)
         *(.sram2*)
         . = ALIGN(4);
-    } > SRAM2
+    } > SRAM12
 
     .bkupsram (NOLOAD) :
     {
@@ -158,13 +183,8 @@ SECTIONS
         . = ALIGN(4);
     } > BKPSRAM
 
-    .dtcm_ext (NOLOAD) :
-    {
-        . = ALIGN(4);
-        *(.dtcm_ext)
-        *(.dtcm_ext*)
-        . = ALIGN(4);
-    } > DTCM_EXT
+    /* .dtcm_ext 段已随 DTCM_EXT region 一并撤销：该段原本为空，
+     * 其 40K 空间已并入 RT_HEAP 供 LVGL 使用。 */
 
     .rt_heap (NOLOAD) :
     {

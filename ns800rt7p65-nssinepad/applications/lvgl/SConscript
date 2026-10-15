@@ -1,0 +1,17 @@
+from building import *
+import os
+
+cwd = GetCurrentDir()
+src = Glob('*.c')
+CPPPATH = [cwd]
+
+group = DefineGroup('LVGL-port', src, depend = ['PKG_USING_LVGL'], CPPPATH = CPPPATH)
+
+# 递归子目录：ui/（占位界面，将来 EEZ 导出产物也放这里）
+# ⚠️ 必须用相对路径 SConscript(item/SConscript)——用绝对路径会让 .o 落进源码树
+list = os.listdir(cwd)
+for item in list:
+    if os.path.isfile(os.path.join(cwd, item, 'SConscript')):
+        group = group + SConscript(os.path.join(item, 'SConscript'))
+
+Return('group')

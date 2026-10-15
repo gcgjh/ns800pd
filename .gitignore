@@ -1,0 +1,232 @@
+# ============================================================================
+#  ns800pd —— NS800RT7P65（RT-Thread + LVGL）与 ESP32-C3（ESP-IDF）双板终端
+#
+#  仓库布局与 NS800 工程一致（根目录即 BSP 工程的根）：
+#    ns800rt7p65-nssinepad/   BSP 本体
+#    libraries/               厂商 SDK 与 HAL 驱动
+#    c3_bridge/               ESP32-C3 侧（本仓库独有）
+#
+#  叠加关系：ns800rt7p65-nssinepad/.gitignore 是 RT-Thread BSP 自带的一份，
+#            与本文同时生效，负责该目录下的 *.elf / *.bin / *.map / packages/ 等；
+#            本文件是仓库级兜底，覆盖两个子工程共有的部分。
+#
+#  有意保留、不要加入忽略清单的：
+#    - ns800rt7p65-nssinepad/LVGL_AI_STANDARD.md
+#    - ns800rt7p65-nssinepad/FLASHING_AI_STANDARD.md
+#      这两份是项目文档（UI 开发规范与烧录规范），不是 AI 工具产物。
+#    - ns800rt7p65-nssinepad/.config   menuconfig 产物，本仓库按既有约定跟踪它。
+#    - workspace.code-workspace / vscode.code-workspace  BSP 工程自带的编辑配置。
+#    - libraries/                      芯片厂商 SDK，编译时按路径引用，必须随仓库分发。
+#    - ns800rt7p65_pyocd_flash/        pyocd 烧录算法与 target 定义，烧录依赖它。
+# ============================================================================
+
+
+# ---------------------------------------------------------------------------
+# 一、AI 工具产物
+#
+# 各类 AI 编码助手在项目里留下的工作目录、缓存与会话记录，属于个人环境。
+# 如需把某个 AI 约定文件共享给协作者，在其规则前加 "!" 单独放行，例如：
+#     !.cursorrules
+# ---------------------------------------------------------------------------
+
+# Claude Code / WorkBuddy
+.claude/
+.workbuddy/
+CLAUDE.md
+
+# Cursor
+.cursor/
+.cursorrules
+
+# GitHub Copilot
+.copilot/
+
+# Aider
+.aider*
+.aider.chat.history.md
+.aider.tags.cache/
+
+# Continue
+.continue/
+
+# Codeium / Windsurf
+.codeium/
+.windsurf/
+
+# Cline / Roo Code
+.clinerules/
+.roo/
+
+# SpecStory（会话记录）
+.specstory/
+
+# Gemini CLI / OpenAI Codex
+.gemini/
+.codex/
+
+# 通用 AI 代理说明文件
+AGENTS.md
+
+
+# ---------------------------------------------------------------------------
+# 二、构建与编译产物
+# ---------------------------------------------------------------------------
+
+# ESP-IDF
+c3_bridge/build/
+c3_bridge/build_*/
+c3_bridge/managed_components/
+c3_bridge/dependencies.lock
+build/
+build_*/
+cmake-build-*/
+
+# RT-Thread / scons
+.sconsign.dblite
+*.dblite
+cconfig.h
+rtthread
+rtthread.elf
+rtthread.bin
+rtthread.map
+link.lds.generated
+
+# 目标文件与中间产物（任意目录）
+*.o
+*.obj
+*.d
+*.dep
+*.i
+*.ii
+*.su
+*.gcno
+*.gcda
+*.map
+*.elf
+*.bin
+*.hex
+*.axf
+*.out
+*.exe
+*.pdb
+*.idb
+*.ilk
+*.crf
+
+# 注意：不要加 *.s / *.S —— 芯片启动文件就是汇编源文件
+#       （libraries/.../Device/Src/gcc/startup_NS800RT7xxx.S），必须入库。
+#       也不要加 *.a —— 部分厂商 SDK 会以静态库形式提供预编译驱动。
+
+# Keil MDK / IAR / J-Link
+Debug/
+Release/
+RTE/
+settings/
+DebugConfig/
+*.uvguix*
+JLinkLog.txt
+JLinkSettings.ini
+
+# 编译数据库：含本机绝对路径，由构建生成（clangd 会在构建后重新生成）
+compile_commands.json
+.ninja_deps
+.ninja_log
+
+# RT-Thread 软件包：由 pkgs --update 按 pkgs.json 下载，不随仓库分发
+# （ns800/ns800rt7p65-nssinepad/packages/ 约 139 MB）
+packages/
+packages.dbsqlite
+pkgs_error.json
+
+# 芯片厂商 SDK：本地是一份来自公开仓库的克隆
+#   https://github.com/RT-Thread-packages/novosns-series.git
+# 内含 .git，git 不会递归进去；若不忽略，父仓库只会记一个空的 git 引用，
+# 别人克隆下来就是空目录、scons 找不到厂商头文件。
+# 克隆后需按 README.md 的说明放回 libraries/novosns-series-latest/。
+libraries/novosns-series-latest/
+
+
+# ---------------------------------------------------------------------------
+# 三、环境与本地配置
+#
+# 含本机绝对路径或凭据，换一台机器就要改，不入库。
+# ---------------------------------------------------------------------------
+
+# 编辑器指向本机工具链安装位置的配置。
+# 注意：*.code-workspace 不在忽略之列 —— BSP 自带的 workspace.code-workspace
+# 与 vscode.code-workspace 属于工程的一部分，本仓库沿用既有约定跟踪它们。
+.vscode/
+
+# ESP-IDF 工程配置：由 sdkconfig.defaults + Kconfig.projbuild 推导生成。
+# 其中 CONFIG_C3_WIFI_SSID / CONFIG_C3_WIFI_PASSWORD 会保存 WiFi 凭据，
+# 入库等于把密码提交上去，故忽略。
+# 在 menuconfig 里改了需要长期保留的项后，用下面命令折回默认值文件：
+#     idf.py save-defconfig      # 把当前配置写回 sdkconfig.defaults
+c3_bridge/sdkconfig
+c3_bridge/sdkconfig.old
+c3_bridge/.cache/
+
+# RT-Thread menuconfig 备份（.config 本身是本仓库的跟踪文件，不在此列）
+.config.old
+
+# Python 环境与缓存
+__pycache__/
+*.py[cod]
+.python-version
+venv/
+.venv/
+env/
+virtualenv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 通用缓存目录
+.cache/
+.ccache/
+
+# 环境变量文件
+.env
+.env.*
+*.local
+
+
+# ---------------------------------------------------------------------------
+# 四、编辑器、操作系统与杂项
+# ---------------------------------------------------------------------------
+
+# 编辑器临时文件
+*~
+*.swp
+*.swo
+*.bak
+*.orig
+*.rej
+*.tmp
+*.temp
+.history/
+
+# JetBrains
+.idea/
+
+# Source Insight / cscope / ctags
+*.si4project
+cscope.*
+ncscope.*
+tags
+GPATH
+GRTAGS
+GTAGS
+
+# 操作系统
+.DS_Store
+.DS_Stor*
+._*
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# 日志与崩溃转储
+*.log
+*.stackdump

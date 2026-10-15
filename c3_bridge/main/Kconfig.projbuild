@@ -1,0 +1,31 @@
+menu "C3 Bridge 配置"
+
+    config C3_WIFI_SSID
+        string "WiFi SSID"
+        default ""
+        help
+            要连接的 2.4GHz AP 名称。
+            ⚠️ ESP32-C3 只支持 2.4GHz，5GHz 的 SSID 连不上。
+            这里配置而不是硬编码进源码，避免凭据被提交。
+
+    config C3_WIFI_PASSWORD
+        string "WiFi Password"
+        default ""
+        help
+            AP 密码。留空表示开放网络。
+
+    config C3_REPORT_PERIOD_S
+        int "上报周期（秒）"
+        range 5 3600
+        default 30
+        help
+            向服务器上报 + 向 NS800 推送传感器数据的周期。
+
+    config C3_REPORT_URL
+        string "上报 URL"
+        default ""
+        help
+            HTTP POST 的目标地址。留空则只做本地打印 + 向 NS800 推送，
+            不发网络请求（方便没有服务器时先跑通链路）。
+
+endmenu

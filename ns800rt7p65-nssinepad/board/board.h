@@ -28,7 +28,9 @@ extern "C"
 
 extern int Image$$RW_RT_HEAD$$Limit;
 #define HEAP_BEGIN      (&Image$$RW_RT_HEAD$$Limit)
-#define HEAP_END        ((uint32_t)&Image$$RW_RT_HEAD$$Limit + 0x4000)
+/* 堆大小 56K (0xE000)：原为 16K，LVGL widgets demo 需要更大的堆，
+ * 已把原 DTCM_EXT(40K) 并入。改这里必须同步改 board/linker_scripts/link.lds 的 RT_HEAP LENGTH */
+#define HEAP_END        ((uint32_t)&Image$$RW_RT_HEAD$$Limit + 0xE000)
 
 
 /*******************************************************************************
@@ -68,8 +70,42 @@ extern int Image$$RW_RT_HEAD$$Limit;
   * @}
   */
 
+/** @defgroup C3_LINK_PIN ESP32-C3 板间链路串口引脚
+  * @{
+  * @brief  与 ESP32-C3 通信的专用 UART2（PB6/PB7，ALT1）。
+  *         UART1 被控制台占用，因此另开一路；PB6/PB7 当前无其他外设使用。
+  *         接线：NS800 PB6(TX) -> C3 GPIO5(RX)，NS800 PB7(RX) <- C3 GPIO4(TX)，
+  *               两侧 GND 必须共地。
+  *
+  * ⚠️ 编号陷阱：本 SDK 的全局编号 `GPIO_n` **按物理封装引脚顺序**排，
+  *    和 port 字母不是简单对齐的（中间夹了 GPIOF 的散脚）。注意别搞错：
+  *      GPIO_6  = PA6   ← **不是** PB6！
+  *      GPIO_7  = PA7   ← **不是** PB7！
+  *      GPIO_38 = PB6   ✓
+  *      GPIO_39 = PB7   ✓
+  *    权威定义在 StdDriver/Inc/ti/NS800RT7xxx_TI_gpio.h。
+  *
+  * ⚠️ 另注：下面这两个宏**仅作文档用途，驱动不读它们** —— UART2 的实际引脚
+  *    写死在 libraries/HAL_Drivers/drivers/drv_uart.c 的 uart_config[] 里
+  *    （`.tx_port = GPIOB, .tx_pin = GPIO_PIN_6` 等）。要换脚得改那边。
+  *    这里用「port + pin」两部分写，和 drv_uart.c 的写法保持一致，
+  *    免得有人误拿它去 rt_pin_read()（那是 rt_pin 体系的单值编号 GPIO_38）。
+  */
+#define BOARD_C3_LINK_TX_PORT     GPIOB       /* UART2_TX，ALT1 */
+#define BOARD_C3_LINK_TX_PIN      GPIO_PIN_6  /* = PB6  = rt_pin 编号 GPIO_38 */
+#define BOARD_C3_LINK_RX_PORT     GPIOB       /* UART2_RX，ALT1 */
+#define BOARD_C3_LINK_RX_PIN      GPIO_PIN_7  /* = PB7  = rt_pin 编号 GPIO_39 */
+
+/**
+  * @}
+  */
+
 #define BOARD_SERIALCOM_BAUDRATE    (115200UL)
 #define BOARD_SERIALCOM             UART1
+
+/* 板间链路波特率：与 C3 侧 NS800_LINK_BAUD 保持一致，改动必须两边同步 */
+#define BOARD_C3_LINK_BAUDRATE      (115200UL)
+#define BOARD_C3_LINK               UART2
 
 
 /*******************************************************************************

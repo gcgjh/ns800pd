@@ -2,7 +2,7 @@ import os
 from building import *
 
 cwd = GetCurrentDir()
-src = ['board.c']
+src = ['board.c', 'board_temp.c']
 path = [cwd, cwd + '/port']
 
 if GetDepend('BSP_RTC_USING_DS1307'):

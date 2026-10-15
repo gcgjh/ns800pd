@@ -1,0 +1,14 @@
+from building import *
+import os
+
+cwd = GetCurrentDir()
+src = Glob('*.c')
+
+# 额外把 applications/bridge 的头文件路径暴露出来 —— 系统页（ui_apps.c）
+# 要读 c3_link.h 拿 C3 联网状态。两个模块是同层的兄弟目录，
+# 用相对路径往上跳两格再进 bridge，避免写死绝对路径。
+CPPPATH = [cwd, os.path.normpath(os.path.join(cwd, '..', '..', 'bridge'))]
+
+group = DefineGroup('LVGL-UI', src, depend = ['PKG_USING_LVGL'], CPPPATH = CPPPATH)
+
+Return('group')

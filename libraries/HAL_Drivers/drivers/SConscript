@@ -44,6 +44,8 @@ if GetDepend('BSP_USING_I2C'):
 if GetDepend('BSP_USING_RTC'):
     src += ['drv_rtc.c']
 
+# EDMA + DMAMUX：SPI/UART/ADC 的 DMA 都靠它。体量小（~300 行），
+
 group = DefineGroup('HAL_Drivers', src, depend = [''], CPPPATH = path)
 
 Return('group')

@@ -1,0 +1,31 @@
+﻿# C3 联网桥 —— 4MB Flash 自定义分区表（OTA 双槽方案）
+#
+# 为什么不用 IDF 默认的 partitions_singleapp.csv：
+#   那个模板只圈了 1MB 给 app（factory 槽），4MB 里有 2.94MB 完全没登记
+#   → 固件够不着、也不支持 OTA（OTA 必须有 ota_0/ota_1 两个槽轮流写）。
+#
+# 本表布局（4MB = 0x400000）：
+#   0x000000  bootloader        21KB   IDF 用，别动
+#   0x008000  分区表本体          3KB   IDF 用，别动
+#   0x009000  nvs               24KB   ★ WiFi 配置存这里（namespace "wificfg"）
+#   0x00F000  otadata            8KB   ★ OTA 状态标记（"下次从哪个槽启动"）
+#   0x011000  phy_init           4KB   RF 校准
+#   0x020000  ota_0           1.5MB   主程序槽 A
+#   0x1A0000  ota_1           1.5MB   主程序槽 B
+#   0x320000  (空)            ~0.94MB 预留给以后加 spiffs/littlefs 数据分区
+#
+# ⚠️ 槽大小取 1.5MB 的依据：当前固件 854KB，余量 76%。
+#    以后固件涨到 ~1.4MB 仍能 OTA；若会涨得更凶，要重排这张表。
+# ⚠️ otadata 必须是 0x2000 的整数倍大小且紧邻两个 ota 槽之前（IDF 约定）。
+# ⚠️ 两个 ota 槽必须**等大**，且起始地址 64KB 对齐（0x10000 的倍数），
+#    否则 IDF 编译期 check_sizes.py 会报错。
+#
+# 换这张表后**必须用串口重烧一次完整镜像**（idf.py flash），
+# 因为分区布局变了，OTA 无法自举到新布局。nvs 也会被清空 → 需重新配网。
+#
+# Name,     Type, SubType,  Offset,   Size,     Flags
+nvs,        data, nvs,      0x9000,   0x6000,
+otadata,    data, ota,      0xf000,   0x2000,
+phy_init,   data, phy,      0x11000,  0x1000,
+ota_0,      app,  ota_0,    0x20000,  0x180000,
+ota_1,      app,  ota_1,    0x1A0000, 0x180000,

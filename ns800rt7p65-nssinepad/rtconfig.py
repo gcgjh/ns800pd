@@ -30,7 +30,9 @@ else:
 if os.getenv('RTT_EXEC_PATH'):
     EXEC_PATH = os.getenv('RTT_EXEC_PATH')
 
-BUILD = os.getenv('RTT_BUILD', 'debug')
+# 默认 release（走下面的 -Os 分支）：512K flash 跑 LVGL 空间吃紧，
+# -O0 编出来的固件装不下。需要 -O0 单步调试时：export RTT_BUILD=debug 再 scons。
+BUILD = os.getenv('RTT_BUILD', 'release')
 
 if PLATFORM == 'gcc':
     # toolchains
@@ -57,7 +59,9 @@ if PLATFORM == 'gcc':
         CFLAGS += ' -O0 -gdwarf-2 -g'
         AFLAGS += ' -gdwarf-2'
     else:
-        CFLAGS += ' -O2'
+        # -Os 而非 -O2：512K flash 跑 LVGL widgets demo 空间吃紧，
+        # -Os 可省约 5~8% 代码体积。想换回性能优先可改回 -O2。
+        CFLAGS += ' -Os'
 
     CXXFLAGS = CFLAGS 
     CFLAGS += ' -std=gnu99'

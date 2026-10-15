@@ -1,0 +1,28 @@
+# C3 联网桥 —— 项目默认配置
+#
+# ⚠️ 这个文件只在 **sdkconfig 缺失或配置项无历史值** 时生效。
+#    已经存在的 sdkconfig 不会被它覆盖 —— 想强制生效必须删掉 sdkconfig 重配，
+#    或者直接在 menuconfig 里手动勾（见下方"已改动项"）。
+#    实际生效值请务必用 `grep CONFIG_xxx sdkconfig` 复核，别只看本文件。
+
+# ── 分区表：改用自定义 CSV（OTA 双槽，见工程根目录 partitions.csv）──
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+CONFIG_PARTITION_TABLE_MD5=y
+
+# ── OTA 回滚保护 ────────────────────────────────────────────────
+# 开启后新固件首次启动会处于 PENDING_VERIFY 状态，必须由应用主动
+# 调用 esp_ota_mark_app_valid_cancel_rollback() 确认，否则下次重启
+# 自动回滚到旧固件。作用：防"OTA 推了一个起不来的固件 → 板子变砖"。
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
+# ── Flash 硬件参数（4MB）────────────────────────────────────────
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# ── app 回滚时的日志更详细（排障用）──────────────────────────────
+CONFIG_BOOTLOADER_LOG_LEVEL_INFO=y

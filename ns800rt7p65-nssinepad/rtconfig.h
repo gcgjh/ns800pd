@@ -77,6 +77,8 @@
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
 #define IDLE_THREAD_STACK_SIZE 256
+#define RT_USING_CPU_USAGE_TRACER
+#define RT_CPU_USAGE_CALC_INTERVAL_MS 200
 
 /* kservice options */
 
@@ -134,6 +136,14 @@
 
 /* DFS: device virtual file system */
 
+#define RT_USING_DFS
+#define DFS_USING_POSIX
+#define DFS_USING_WORKDIR
+#define DFS_FD_MAX 16
+#define RT_USING_DFS_V1
+#define DFS_FILESYSTEMS_MAX 4
+#define DFS_FILESYSTEM_TYPES_MAX 4
+#define RT_USING_DFS_DEVFS
 /* end of DFS: device virtual file system */
 
 /* Device Drivers */
@@ -142,13 +152,28 @@
 #define RT_UNAMED_PIPE_NUMBER 64
 #define RT_USING_SERIAL
 #define RT_USING_SERIAL_V1
-#define RT_SERIAL_RB_BUFSZ 64
+#define RT_SERIAL_USING_DMA
+/* ⚠️ V1 的串口环形缓冲**只认这个宏**，不看 BSP_UARTx_RX_BUFSIZE！
+ * 驱动里 NS800_UART_BUF_CONFIG() 在 RT_USING_SERIAL_V2 未定义时
+ * 一律用 RT_SERIAL_RB_BUFSZ（见 drv_uart.c）。
+ * 默认 64 对板间帧（最大 100 字节）偏小，配合 UI 抢占容易溢出丢字节 → CRC 错。
+ * 提到 256：一帧 100B，留 2 帧余量。 */
+#define RT_SERIAL_RB_BUFSZ 256
 #define RT_USING_CAN
 #define RT_CAN_USING_CANFD
 #define RT_CANMSG_BOX_SZ 16
 #define RT_CANSND_BOX_NUM 1
 #define RT_CANSND_MSG_TIMEOUT 100
 #define RT_CAN_NB_TX_FIFO_SIZE 256
+#define RT_USING_ADC
+#define RT_USING_ADC_V1
+#define RT_USING_MTD_NOR
+#define RT_USING_SPI
+#define RT_USING_SPI_ISR
+#define RT_USING_SFUD
+#define RT_SFUD_USING_SFDP
+#define RT_SFUD_USING_FLASH_INFO_TABLE
+#define RT_SFUD_SPI_MAX_HZ 50000000
 #define RT_USING_PIN
 /* end of Device Drivers */
 
@@ -250,6 +275,12 @@
 
 /* LVGL: powerful and easy-to-use embedded GUI library */
 
+#define PKG_USING_LVGL
+#define PKG_LVGL_THREAD_PRIO 20
+#define PKG_LVGL_THREAD_STACK_SIZE 4096
+#define PKG_LVGL_DISP_REFR_PERIOD 5
+#define PKG_LVGL_USING_V09010
+#define PKG_LVGL_VER_NUM 0x090100
 /* end of LVGL: powerful and easy-to-use embedded GUI library */
 
 /* u8g2: a monochrome graphic library */
@@ -280,6 +311,17 @@
 /* Micrium: Micrium software products porting for RT-Thread */
 
 /* end of Micrium: Micrium software products porting for RT-Thread */
+#define PKG_USING_LITTLEFS
+#define PKG_USING_LITTLEFS_LATEST_VERSION
+#define LFS_READ_SIZE 256
+#define LFS_PROG_SIZE 256
+#define LFS_BLOCK_SIZE 4096
+#define LFS_NO_DEBUG
+#define LFS_CACHE_SIZE 256
+#define LFS_BLOCK_CYCLES -1
+#define LFS_THREADSAFE
+#define LFS_LOOKAHEAD_MAX 128
+#define RT_DEF_LFS_DRIVERS 1
 /* end of system packages */
 
 /* peripheral libraries and drivers */
@@ -330,6 +372,10 @@
 
 /* end of HPMicro SDK */
 
+/* FM33 Drivers */
+
+/* end of FM33 Drivers */
+
 /* FT32 HAL & SDK Drivers */
 
 /* end of FT32 HAL & SDK Drivers */
@@ -347,11 +393,31 @@
 
 /* sensors drivers */
 
+#define PKG_USING_DHTXX
+#define PKG_USING_DHTXX_TYPE_DHT22
+#define PKG_USING_DHTXX_LATEST_VERSION
+#define PKG_DHTXX_VER_NUM 0x99999
 /* end of sensors drivers */
 
 /* touch drivers */
 
 /* end of touch drivers */
+#define PKG_USING_BUTTON
+#define PKG_USING_BUTTON_LATEST_VERSION
+#define PKG_USING_ILI9341
+#define PKG_ILI_9341_SPI_BUS_NAME "spi1"
+#define PKG_ILI_9341_SPI_DEVICE_NAME "lcd0"
+#define PKG_ILI_9341_WIDTH 240
+#define PKG_ILI_9341_HEIGHT 320
+#define PKG_ILI_9341_DC_PIN 11
+#define PKG_ILI_9341_RES_PIN 14
+#define PKG_ILI_9341_CS_PIN 15
+#define PKG_ILI_9341_BLK_PIN 22
+#define PKG_USING_ILI9341_LATEST_VERSION
+#define PKG_USING_BEEP
+#define PKG_BEEP_ACTIVE_BUZZER
+#define PKG_BEEP_THREAD_STACK_USING_HEAP
+#define PKG_USING_BEEP_V120
 /* end of peripheral libraries and drivers */
 
 /* AI packages */
@@ -426,12 +492,23 @@
 /* On-chip Peripheral Drivers */
 
 #define BSP_USING_GPIO
+#define BSP_GPIO_PIN_IRQ
 #define BSP_USING_UART
 #define BSP_NS800_UART_TX_TIMEOUT 6000
 #define BSP_UART_DEFAULT_BAUDRATE 115200
 #define BSP_UART_DATABITS_8
 #define BSP_UART_STOPBITS_1
 #define BSP_USING_UART1
+/* UART2 = 与 ESP32-C3 的板间链路（PB6=TX / PB7=RX，ALT1）。
+ * 控制台占着 UART1（PA12/PA13），所以另开一路专用于跨板通信；
+ * RX 环形缓冲从默认 64 提到 256，帧长最大 99 字节会有突发。 */
+#define BSP_USING_UART2
+#define BSP_UART2_RX_BUFSIZE 256
+#define BSP_UART2_TX_BUFSIZE 0
+#define BSP_USING_ADC
+#define BSP_USING_SPI
+#define BSP_USING_SPI1
+#define BSP_USING_SPI3
 /* end of On-chip Peripheral Drivers */
 
 #endif
