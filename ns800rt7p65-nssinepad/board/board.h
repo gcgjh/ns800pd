@@ -77,7 +77,7 @@ extern int Image$$RW_RT_HEAD$$Limit;
   *         接线：NS800 PB6(TX) -> C3 GPIO5(RX)，NS800 PB7(RX) <- C3 GPIO4(TX)，
   *               两侧 GND 必须共地。
   *
-  * ⚠️ 编号陷阱：本 SDK 的全局编号 `GPIO_n` **按物理封装引脚顺序**排，
+  *   编号陷阱：本 SDK 的全局编号 `GPIO_n` **按物理封装引脚顺序**排，
   *    和 port 字母不是简单对齐的（中间夹了 GPIOF 的散脚）。注意别搞错：
   *      GPIO_6  = PA6   ← **不是** PB6！
   *      GPIO_7  = PA7   ← **不是** PB7！
@@ -85,7 +85,7 @@ extern int Image$$RW_RT_HEAD$$Limit;
   *      GPIO_39 = PB7   ✓
   *    权威定义在 StdDriver/Inc/ti/NS800RT7xxx_TI_gpio.h。
   *
-  * ⚠️ 另注：下面这两个宏**仅作文档用途，驱动不读它们** —— UART2 的实际引脚
+  *   另注：下面这两个宏**仅作文档用途，驱动不读它们** —— UART2 的实际引脚
   *    写死在 libraries/HAL_Drivers/drivers/drv_uart.c 的 uart_config[] 里
   *    （`.tx_port = GPIOB, .tx_pin = GPIO_PIN_6` 等）。要换脚得改那边。
   *    这里用「port + pin」两部分写，和 drv_uart.c 的写法保持一致，

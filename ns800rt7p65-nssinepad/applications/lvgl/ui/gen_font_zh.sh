@@ -11,7 +11,7 @@
 # 两个坑（见 LVGL_AI_STANDARD.md §5）：
 #   1. 必须用系统 node26（/home/linlianhui/.local/bin/node）；WorkBuddy 自带 node 的 WASM 会挂。
 #   2. .ttc 字体集合不被支持（Unsupported OpenType signature ttcf），只能用单体 ttf。
-#   3. ⚠️ 必须 --no-compress：lv_font_conv 默认输出压缩位图（.bitmap_format = 1），
+#   3.   必须 --no-compress：lv_font_conv 默认输出压缩位图（.bitmap_format = 1），
 #      而本工程 lv_conf.h 的 LV_USE_FONT_COMPRESSED = 0 → LVGL 解不出位图、直接返回 NULL，
 #      屏上所有汉字变成空心方块（字形查找其实是成功的，很容易误判成字库没生成）。
 #      想让字库更小就去 lv_conf.h 打开 LV_USE_FONT_COMPRESSED，二者必须匹配。
@@ -24,7 +24,7 @@ PY=/home/linlianhui/.workbuddy/binaries/python/versions/3.13.12/bin/python3
 NODE=/home/linlianhui/.local/bin/node
 CONV=/home/linlianhui/.workbuddy/binaries/node/workspace/node_modules/lv_font_conv/lv_font_conv.js
 
-# ⚠️⚠️ **先校验转义字节，再生成字库**（顺序不能反）。
+#    **先校验转义字节，再生成字库**（顺序不能反）。
 #   手工写 \xNN 时手抖是常事，而症状极具误导性：
 #   "闹钟"的闹写成 \xB0（应为 \xA9）→ 屏上乱码，
 #   串口按 UTF-8 打印时落在邻近码位，打出来是"闰钟" ——

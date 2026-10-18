@@ -153,7 +153,7 @@
 #define RT_USING_SERIAL
 #define RT_USING_SERIAL_V1
 #define RT_SERIAL_USING_DMA
-/* ⚠️ V1 的串口环形缓冲**只认这个宏**，不看 BSP_UARTx_RX_BUFSIZE！
+/*   V1 的串口环形缓冲**只认这个宏**，不看 BSP_UARTx_RX_BUFSIZE！
  * 驱动里 NS800_UART_BUF_CONFIG() 在 RT_USING_SERIAL_V2 未定义时
  * 一律用 RT_SERIAL_RB_BUFSZ（见 drv_uart.c）。
  * 默认 64 对板间帧（最大 100 字节）偏小，配合 UI 抢占容易溢出丢字节 → CRC 错。

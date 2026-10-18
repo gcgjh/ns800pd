@@ -467,12 +467,12 @@ static void spiflash(int argc, char **argv)
 
     if (errors == 0)
     {
-        rt_kprintf("[flash] ✅ loopback PASS: %d bytes 写读一致\n", TEST_LEN);
+        rt_kprintf("[flash]   loopback PASS: %d bytes 写读一致\n", TEST_LEN);
         rt_kprintf("[flash] 硬件可靠，可以上 SFUD / LittleFS 了\n");
     }
     else
     {
-        rt_kprintf("[flash] ❌ loopback FAIL: %d/%d 字节不符\n", errors, TEST_LEN);
+        rt_kprintf("[flash]   loopback FAIL: %d/%d 字节不符\n", errors, TEST_LEN);
         rt_kprintf("[flash] 排查：供电不稳 / SCK 太快 / 别处也在用同一片 FLASH\n");
     }
 }

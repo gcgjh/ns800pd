@@ -25,7 +25,7 @@
 
 /* ── NS800: SPI 批量传输开关 ─────────────────────────────────────────
  *
- * ⚠️ **保持为 0（2026-10-11 实测踩坑）**
+ *   **保持为 0（2026-10-11 实测踩坑）**
  *
  * 曾尝试用 SPI_pollingFifoTransaction() 把逐字节发送换成 FIFO 批量，
  * 结果**屏上出现噪点/条纹/错位**（`lcdcolor preview 0/1/2` 纯色块测试
@@ -99,13 +99,13 @@ static struct ns800_spi_config spi_config[] =
 #endif
 #ifdef BSP_USING_SPI3
     {
-        /* ⚠️ 原模板写的是 GPIOC_0/1/2 + ALT7，实测**无效**：
+        /*   原模板写的是 GPIOC_0/1/2 + ALT7，实测**无效**：
          *    GPIOC_0/1/2 = GPIO_64/65/66，它们的复用表里根本没有 SPI3
          *    （ALT15 是 SPI2、ALT6 是 UART1），配了也不会出波形。
          * 正确做法：按 GPIO 复用表选"同一 ALT 值"的一组三个脚。
          *    SPI3 可选组：
          *      ALT14: GPIO_20/21/22 —— GPIO_22 已作 LCD 背光，排除
-         *      ALT6 : GPIO_50/51/52 (GPIOB_18/19/20) —— 全空闲，采用 ✅
+         *      ALT6 : GPIO_50/51/52 (GPIOB_18/19/20) —— 全空闲，采用  
          *      ALT15: GPIO_69/70/71 —— GPIO_69 被 board.c 初始化成 LED2，排除
          * 注意别撞已占引脚 {1,6,7,12,13,40,41,68,69}。 */
         .name = "spi3",
@@ -239,11 +239,11 @@ static rt_err_t ns800_spi_configure(struct rt_spi_device *device, struct rt_spi_
  *   发送时我们从 SPI 读回的 RX 数据是 dummy（MOSI 上没有意义的回读），
  *   调用方本来就会丢弃，所以整批丢掉即可。
  *
- * ⚠️ 注意 numOfWords 是「字」数不是字节数：
+ *   注意 numOfWords 是「字」数不是字节数：
  *   本驱动 data_width 会把 8bit 配成 SPI_BIT_WIDTH_8_BITS，此时 1 字 = 1 字节。
  *   SPI_pollingFifoTransaction 内部按 SPI_FIFO_TXEMPTY(=16) 分块，
  *   pRxBuffer 传 NULL 时只发不收（见 StdDriver Src/spi.c）。
- * ⚠️ FIFO 宽度在 8bit 模式下是否按 32bit 递增未在数据手册核实：
+ *   FIFO 宽度在 8bit 模式下是否按 32bit 递增未在数据手册核实：
  *   若换 data_width=16 后再调用本路径，需实测确认 txBuffer_pos 步进正确。
  */
 static void ns800_spi_xfer_fifo_write(SPI_TypeDef *instance,

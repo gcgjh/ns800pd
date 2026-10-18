@@ -143,13 +143,13 @@ static void sfudprobe(int argc, char **argv)
 
     if (spi3_sfud_get(RT_NULL, RT_NULL) != RT_EOK)
     {
-        rt_kprintf("[sfud] ❌ 初始化/probe 失败\n");
+        rt_kprintf("[sfud]   初始化/probe 失败\n");
         rt_kprintf("       ① 先跑 spi3probe 确认接线和 JEDEC ID；\n");
         rt_kprintf("       ② 若硬件 OK，说明片子不在 SFUD 内置表且不支持 SFDP\n");
         return;
     }
 
-    rt_kprintf("[sfud] ✅ probe OK: %s\n", g_sfud->name);
+    rt_kprintf("[sfud]   probe OK: %s\n", g_sfud->name);
     rt_kprintf("[sfud]   flash: %s, capacity %u KB\n",
                g_sfud->chip.name[0] ? g_sfud->chip.name : "(SFDP)",
                (unsigned)(g_sfud->chip.capacity / 1024));
@@ -228,10 +228,10 @@ static void sfudtest(int argc, char **argv)
     }
 
     if (errors == 0)
-        rt_kprintf("[sfud] ✅ API loopback PASS: %u bytes 写读一致 @0x%X\n",
+        rt_kprintf("[sfud]   API loopback PASS: %u bytes 写读一致 @0x%X\n",
                    (unsigned)sizeof(wr), (unsigned)base);
     else
-        rt_kprintf("[sfud] ❌ API loopback FAIL: %d/%u 不符\n",
+        rt_kprintf("[sfud]   API loopback FAIL: %d/%u 不符\n",
                    errors, (unsigned)sizeof(wr));
 }
 MSH_CMD_EXPORT(sfudtest, SFUD API loopback test: sfudtest [addr]);

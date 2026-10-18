@@ -93,7 +93,7 @@ cd <BSP> && sh applications/lvgl/ui/gen_font_zh.sh
 
 ### 5.2 四个坑
 
-1. **⚠️ 必须 `--no-compress`（2026-10-06 踩实）**：lv_font_conv 1.5.3 **默认输出压缩位图**
+1. **  必须 `--no-compress`（2026-10-06 踩实）**：lv_font_conv 1.5.3 **默认输出压缩位图**
    （产物里 `.bitmap_format = 1`），而本工程 `lv_conf.h` 的 `LV_USE_FONT_COMPRESSED = 0`。
    LVGL 的 `lv_font_get_bitmap_fmt_txt()` 在这种情况下直接
    `LV_LOG_WARN(...); return NULL;` → **屏上所有汉字变成空心方块**。
@@ -112,7 +112,7 @@ cd <BSP> && sh applications/lvgl/ui/gen_font_zh.sh
 
 - 全部文案集中在 `ui_text.h`，用 UTF-8 转义写法（如 `"\xE6\xB8\xA9\xE5\xBA\xA6"` = 温度），
   规避编辑器/工具链编码漂移；同一行尾注释写原文方便维护。
-- ⚠️ C 的 `\x` 转义**会贪婪吃十六进制字符**：`"°C"` 必须写成 `"\xC2\xB0" "C"`，
+-   C 的 `\x` 转义**会贪婪吃十六进制字符**：`"°C"` 必须写成 `"\xC2\xB0" "C"`，
   写成 `"\xC2\xB0C"` 会被解析成 `\xC2` + `\xB0C`（溢出）而编译报错或显示错字。
 - `zh18` 只含 ASCII + ° + • + 汉字子集，**不含 LVGL 符号区**：用它的 label 里不要嵌
   `LV_SYMBOL_*`。图标里的符号要用 `lv_font_montserrat_32` 单独做 label。
@@ -155,7 +155,7 @@ cd <BSP> && sh applications/lvgl/ui/gen_font_zh.sh
   print({c:(ord(c) in cps) for c in '获断'})"
   ```
 
-> ⚠️ 与 5.2 的第 1 条（`--no-compress`）区分：那个是"字形在字库里但解不出来"，
+>   与 5.2 的第 1 条（`--no-compress`）区分：那个是"字形在字库里但解不出来"，
 > 这个是"字形压根没进字库"。二者的**表象都是空心方块**，但 `fontinfo` 只能查出前者 ——
 > 所以先 `fontinfo` 排除压缩位图，再按本节查字库覆盖。
 
@@ -184,7 +184,7 @@ cd <BSP> && sh applications/lvgl/ui/gen_font_zh.sh
 3. `ui_apps.h` 声明 `build`（`teardown` 若被 `ui.c` 调用则不能是 `static`）
 4. `ui.c`：`APP_COUNT` +1、`g_apps[]` 插一行（`{ 名, 图标, 颜色, build, tick, period, flat_nav, teardown }`）、
    `ui.h` 加一个 `AC_XXX` 图标色
-   ⚠️ **`APP_COUNT` 必须与表项数严格相等** —— 写大了不是编译错误而是**运行期硬故障**
+     **`APP_COUNT` 必须与表项数严格相等** —— 写大了不是编译错误而是**运行期硬故障**
    （`uitest`/`uiapp` 越界读出 NULL 的 build 指针，调用即 usage fault，2026-10-11 实测踩过一次）。
    `ui.c` 里已加 `_Static_assert(sizeof(g_apps)/sizeof(g_apps[0]) == APP_COUNT, ...)` 兜底。
 
@@ -217,7 +217,7 @@ group 跟着切换：桌面 9 个格子 ⇄ App 内的「返回 + 各按钮」�
    跑起来时判据恒为假，**teardown 从来没被调用过**。图片/调色 App 没暴露是因为它们的指针
    清理在 `build()` 里也做了一遍；游戏 App 必须在 teardown 里"切回竖屏"才露馅。
    现已改为 `app_close()` 先存 `g_closing_app = g_cur_app`，`close_done_cb` 用它。
-   ⚠️ 以后凡是"离开页面必须收尾"的逻辑（停 timer、还硬件、切方向）都要确认 teardown 真的跑了。
+     以后凡是"离开页面必须收尾"的逻辑（停 timer、还硬件、切方向）都要确认 teardown 真的跑了。
 9. **别用 `lv_indev_get_state()` 做按键沿检测**（2026-10-11 实测）：`encoder_read_cb`
    每 30ms 才被调用一次，`data->state` 只在那一刻刷新；切换分辨率/重排布局时 LVGL 主循环
    被拖住，read_cb 延后 → 读到**陈旧状态** → 同一个"按下"被连续判成多个上升沿
@@ -253,7 +253,7 @@ group 跟着切换：桌面 9 个格子 ⇄ App 内的「返回 + 各按钮」�
 **正确做法**：需要"改图效果"时优先用 LVGL 原生样式，而不是自己备一份像素：
 - 色调/灰度滤镜 → `lv_obj_set_style_image_recolor(obj, color, 0)` +
   `lv_obj_set_style_image_recolor_opa(obj, LV_OPA_70, 0)`（按像素混合，**零额外内存**）
-  ⚠️ 切回无滤镜时必须把 `recolor_opa` 置 `LV_OPA_TRANSP`，否则色调残留。
+    切回无滤镜时必须把 `recolor_opa` 置 `LV_OPA_TRANSP`，否则色调残留。
 - 几何变换（缩放/裁切）→ `lv_image_set_scale_x/y()` + 父容器裁切，零内存。
 - 真要逐像素处理 → 只能在 `.wall_buf` 上**原地**改（它就是那份唯一的缓冲），
   而且要能接受"改了以后桌面壁纸也变了"。
@@ -316,7 +316,7 @@ slider 自己改值时就已 `lv_obj_invalidate(sl)` 把小矩形塞进 `inv_are
 看 `lv_indev.c` 的 encoder 派发（约 1012 行）：**只有 group 在 edit 模式**时，
 旋钮 diff 才通过 `lv_group_send_data(g, LV_KEY_RIGHT)` 下发。
 `lv_group_send_data` 会把 key 转成 `LV_EVENT_KEY` 发给 **group 的 focused 对象**
-（`lv_group.c:306`）。⚠️ 进 App 时焦点在「返回」按钮上，滑块只是 `CLICK_FOCUSABLE`
+（`lv_group.c:306`）。  进 App 时焦点在「返回」按钮上，滑块只是 `CLICK_FOCUSABLE`
 —— 不先 `lv_group_focus_obj(slider)`，key 全被返回按钮吃掉。
 **真机三步缺一不可：`lv_group_focus_obj` → `lv_group_set_editing(g, true)` → `lv_group_send_data`。**
 
@@ -365,11 +365,11 @@ slider 自己改值时就已 `lv_obj_invalidate(sl)` 把小矩形塞进 `inv_are
 - 出页面：`lv_port_disp_set_orientation(0)` → `ui_set_fullscreen(0)`
   （先切方向，UI 层才读得到正确的当前分辨率）
 
-⚠️ **缓冲必须按两个方向里最宽的（320）分配**。`lv_display_set_buffers()` 是用当前分辨率
+  **缓冲必须按两个方向里最宽的（320）分配**。`lv_display_set_buffers()` 是用当前分辨率
 算 stride/行数的（`lv_display.c:413`，`h = buf_size/stride`）；若按竖屏 240 宽只分 480 B/行，
 横屏时 LVGL 会按 640 B/行写 → 溢出踩内存。
 
-⚠️ **导航栏宽度也要重设**。`build_nav()` 是按 `SCR_W`(240) 建死的，横屏不重设就只有 240 宽。
+  **导航栏宽度也要重设**。`build_nav()` 是按 `SCR_W`(240) 建死的，横屏不重设就只有 240 宽。
 反过来更隐蔽：`ui_set_fullscreen()` 用"当前分辨率"算宽度，所以**退出时若不先把方向切回竖屏**，
 会把导航栏设成 320 宽，切回竖屏后就溢出屏外了。
 
@@ -411,7 +411,7 @@ Flash 只剩 ~92 KB、LVGL 池只有 64 KB —— 一张 320×240 RGB565 图要 
   —— BSP 的时区表没配，用 newlib 会算错。UTC+8 已在 C3 侧加过，这里只做 tm 拆解。
 - **`sb_now_unix()` = 最近一帧时间 + (now_tick - 收到帧时的 tick)**：
   这样即使 C3 的帧隔了几秒才到或丢了几帧，显示也连续、不跳秒。
-- **1 s 定时器**：`g_sb_timer` 单开。⚠️ 别复用 App 页的 `g_app_timer`
+- **1 s 定时器**：`g_sb_timer` 单开。  别复用 App 页的 `g_app_timer`
   —— 那个只在 App 打开时跑（桌面状态是停的）。
 - wday：`1970-01-01` 是**周四** → `wday = (days + 4) % 7`（0 = 周日）。
 
@@ -422,7 +422,7 @@ NS800 无网络，NTP 只能在 C3 跑；对到时间后走板间链路 `NS800_C
 
 - **时区只在一处换算**（C3 的 `time_mgr_local_unix()` = `time(NULL) + 8*3600`），
   NS800 只拆 tm —— 避免两边各算一次对不上。
-- ⚠️ **不要在 `app_main` 里同步调 `time_mgr_start()`**：它阻塞最多 75 s
+-   **不要在 `app_main` 里同步调 `time_mgr_start()`**：它阻塞最多 75 s
   （等 IP 60 s + 首次对时 15 s），会把心跳任务和 `ota_mgr_confirm_valid()`（回滚确认）
   一起推迟；期间若复位，新 OTA 固件会被 bootloader 回滚。→ 起独立任务 `time_mgr_task`。
 - 对时失败**不退出**：每 60 s 重试，否则"开机时路由器慢"会让时间功能永久失效。
@@ -444,7 +444,7 @@ NS800 无网络，NTP 只能在 C3 跑；对到时间后走板间链路 `NS800_C
 
 **典型错误写法**：每个调用点自己算
 ```c
-total = uptime_saved + rt_tick_get()/RT_TICK_PER_SECOND;   /* ❌ */
+total = uptime_saved + rt_tick_get()/RT_TICK_PER_SECOND;   /*   */
 if (过了 60s) settings_uptime_store(total);                 /* 写回 uptime_saved */
 ```
 **为什么错**：`store(total)` 之后 `uptime_saved` 里**已经含了 now_s**，
@@ -511,7 +511,7 @@ rt_bool_t settings_uptime_flush(void)           /* 写（自带节流，可高�
 3. 烧录 + 复位（烧录命令形状见 `FLASHING_AI_STANDARD.md`）
 4. **串口跑 `fontinfo`**：打印 zh18 的 `cmap_num/bpp/bitmap_format`。汉字变方块时第一个看它
    （`bitmap_format` 必须是 0），见 §5.2 坑 1。
-   ⚠️ `fontinfo` **只能查出"压缩位图解不出来"**；如果是"字形压根没进字库"（§5.3.1 的
+     `fontinfo` **只能查出"压缩位图解不出来"**；如果是"字形压根没进字库"（§5.3.1 的
    `.c` 裸中文盲区），它也是正常的 —— 那种要按 §5.3.1 核对 `unicode_list_1` 覆盖。
 5. **串口跑 `uitest`**：依次打开/关闭全部 App，正常结尾是 `[uitest] all N apps OK`（N = 当前 `APP_COUNT`）。
    它能在没有相机的情况下自动抓出"某个页面 build 崩了 / 返回键失效"这类问题
@@ -524,11 +524,11 @@ rt_bool_t settings_uptime_flush(void)           /* 写（自带节流，可高�
 8. 让主人拍屏幕照片反馈（文字渲染、布局、配色、焦点位置）
 9. **改"掉电保存"类功能（如 uptime），必做断电/复位复测**：
    `cat /cfg.txt` 确认字段真落盘 → 复位 → `cfg` 看 `历史` 是否保留（见 §6.7.3）。
-   ⚠️ 读串口时若用 pyserial，**`open()` 前要设 `dtr=False, rts=False, hupcl=False`**，
+     读串口时若用 pyserial，**`open()` 前要设 `dtr=False, rts=False, hupcl=False`**，
    否则一读就把板子复位，把要验证的状态清零了。
 10. **累计时长类"累加器"要测增速、不能只看"在涨"**（见 §6.7.3.1）：
    间隔 2~3 个落盘周期读两次，比对 `增量/实际经过时间` 是否 ≈ 1.0。
-   ⚠️ "数值在涨"恰恰是重复累加 bug 的表象 —— 必须看**比值**。
+     "数值在涨"恰恰是重复累加 bug 的表象 —— 必须看**比值**。
 11. 回到 1
 
 验证要点：中文是否方块、图标是否居中、焦点框是否跟着旋钮走、每棘爪是否步进 1、返回是否顺畅。

@@ -157,7 +157,7 @@ static void wallsave(int argc, char **argv)
         expect = (rt_uint32_t)strtoul(argv[1], RT_NULL, 0);
         if (expect != sum)
         {
-            rt_kprintf("[wall] ❌ hash 不符：主机给 0x%08X，缓冲实际 0x%08X\n",
+            rt_kprintf("[wall]   hash 不符：主机给 0x%08X，缓冲实际 0x%08X\n",
                        (unsigned)expect, (unsigned)sum);
             rt_kprintf("[wall]    → pyocd 没写进去？确认地址是 wallstatus 打印的那个\n");
             return;
@@ -166,7 +166,7 @@ static void wallsave(int argc, char **argv)
     }
     else
     {
-        rt_kprintf("[wall] ⚠️  未给 hash，跳过校验（当前缓冲 hash = 0x%08X）\n",
+        rt_kprintf("[wall]    未给 hash，跳过校验（当前缓冲 hash = 0x%08X）\n",
                    (unsigned)sum);
     }
 
@@ -229,12 +229,12 @@ static void wallsave(int argc, char **argv)
 
     if (errors == 0 && total == WALL_BYTES)
     {
-        rt_kprintf("[wall] ✅ 回读校验 PASS：%u 字节一致\n", (unsigned)total);
+        rt_kprintf("[wall]   回读校验 PASS：%u 字节一致\n", (unsigned)total);
         wallpaper_invalidate();         /* 令下次 wallpaper_get() 重新读取 */
     }
     else
     {
-        rt_kprintf("[wall] ❌ 校验 FAIL：读过 %u 字节，%d 处不符\n",
+        rt_kprintf("[wall]   校验 FAIL：读过 %u 字节，%d 处不符\n",
                    (unsigned)total, errors);
     }
 }

@@ -4,7 +4,7 @@
 > 来源：本项目全部**实测**结论（2026-10-01 首次跑通；2026-10-06 16:0x 全链路复验并**修正核心机制**）。
 > **任何 AI 在本机做烧录/读串口之前，必须先读完本文档。**
 
-> ⚠️ **2026-10-06 16:0x 重大修正**
+>   **2026-10-06 16:0x 重大修正**
 > 旧版结论「沙箱里能烧；失败唯一原因是没拿豁免；豁免是逐次抽奖、连发 8~15 次即可」**是错的**。
 > 真正机制只有一句：**命令必须命中客户端的「命令审批规则」（当前环境下 = 命令里含 `find … -delete`），
 > 才会被批准在沙箱外执行；否则一律落进沙箱——而沙箱里结构上永远看不到探针。**
@@ -32,9 +32,9 @@
    客户端会弹审批；**批准 = 在沙箱外执行**（判据 `uid_map` 变 `0 0 4294967295`）。
    此时宿主真实 `/dev/bus/usb/003/009`（探针 `189,264`）和 `/dev/ttyACM0`（`166,0`）**本来就在**（udev 建的），
    直接 `pyocd flash` 即可，**不需要 mknod**。
-   - ⚠️ **`dangerouslyDisableSandbox: true` 单独不够**：客户端若处于"默认放行命令执行"状态，会把命令
+   -   **`dangerouslyDisableSandbox: true` 单独不够**：客户端若处于"默认放行命令执行"状态，会把命令
      **静默丢进沙箱**（审计日志记为 `command-safety.sandbox-executed / allowed`），你只看到"没有探针"。
-   - ⚠️ 批准是**逐次**的，不跨 Bash 调用持久 → 每次要碰 `/dev` 的调用都要带 `find … -delete`。
+   -   批准是**逐次**的，不跨 Bash 调用持久 → 每次要碰 `/dev` 的调用都要带 `find … -delete`。
 
 3. **烧录 + 建串口 + 读日志写在同一次 Bash 调用里；禁用后台任务（`run_in_background`）。**
    后台任务拿不到审批，会静默退回沙箱、卡在 `Waiting for a debug probe`。
@@ -47,7 +47,7 @@
 > 只要第 0 步那行 `find … -delete` 在命令里，就**不必再"重发试探"**；反过来把它去掉，就一定退回沙箱。
 
 ```bash
-# ⚠️ 整段一次性执行。实测（2026-10-06 16:19）：dangerouslyDisableSandbox 并非必需 ——
+#   整段一次性执行。实测（2026-10-06 16:19）：dangerouslyDisableSandbox 并非必需 ——
 #    决定因素是第 0 行的 find -delete（命中审批）+ 批准；带上它无害，不带也能通。
 BSP=/home/linlianhui/RT_Thread/rt-thread/bsp/novosns/ns800/ns800rt7p65-nssinepad
 cd "$BSP" || exit 1
@@ -83,7 +83,7 @@ kill $R 2>/dev/null; wait $R 2>/dev/null
 tr -d '\000' < /tmp/ser.log | tr '\r' '\n' | sed 's/[^[:print:]]//g' | sed '/^[[:space:]]*$/d'
 ```
 
-> ⚠️ **`f.sh` 里没有 `find -delete`** → 在 AI 沙箱里直接 `source f.sh` **必失败**（拿不到豁免）。
+>   **`f.sh` 里没有 `find -delete`** → 在 AI 沙箱里直接 `source f.sh` **必失败**（拿不到豁免）。
 > `f.sh` 只适合**主人在自己终端**跑（本机没有 AI 沙箱）。
 
 ---
@@ -97,7 +97,7 @@ tr -d '\000' < /tmp/ser.log | tr '\r' '\n' | sed 's/[^[:print:]]//g' | sed '/^[[
 所以**决定权全在 `canonicalCommand`（命令文本归一化后的样子）**。
 ⇒ **只要每次跑的是"一字不差的同一段命令"，本会话内就只会被问一次。**
 
-**⚠️ 下面这段必须逐字照抄（含空行/顺序/引号）；改动任何字符都会变成新 key、重新弹窗。**
+**  下面这段必须逐字照抄（含空行/顺序/引号）；改动任何字符都会变成新 key、重新弹窗。**
 （`/tmp` 那行是为"触发审批"服务的；真正的清理由第 2 行的 `find … -delete` 完成。）
 
 ```bash
@@ -143,7 +143,7 @@ tr -d '\000' < /tmp/rt_ser.log | tr '\r' '\n' | sed 's/[^[:print:]]//g' | sed '/
 > 判据提醒：**审计日志里的 `ask-matched` 每次都记（它是无条件写入的），不能用来判断"UI 有没有弹"**；
 > 真正代表"没弹窗、走了缓存"的事件是 `command-safety.session-cache-hit`。
 
-**✅ 实测验证（2026-10-06 16:50 / 16:52，连续两次逐字使用上面模板）**
+**  实测验证（2026-10-06 16:50 / 16:52，连续两次逐字使用上面模板）**
 
 | 次序 | 审计事件 | 结果 |
 |---|---|---|
@@ -218,7 +218,7 @@ CMSIS-DAP 在 class `ff` 接口上、**没有 hidraw** → 必须用 libusb 后�
 
 ### 3.4 拿豁免：走审批通道（本节是全文最重要的一节）
 
-**✅ 有效做法**：命令里含 **`find … -delete`**（例如预删 `rtthread.elf/bin/map`）。
+**  有效做法**：命令里含 **`find … -delete`**（例如预删 `rtthread.elf/bin/map`）。
 这会命中 commandSafety 规则 `builtin:unsafe-find-delete` → 客户端**弹审批** → 批准后
 **命令在沙箱外执行**（`uid_map` = `0 0 4294967295`）。
 
@@ -239,7 +239,7 @@ CMSIS-DAP 在 class `ff` 接口上、**没有 hidraw** → 必须用 libusb 后�
 反面：同一天 15:43–15:59 共 **63 条**不含 `find -delete` 的命令，全部
 `command-safety.sandbox-executed / allowed`，**0 条 ask-matched、0 条 approved** —— 全落进沙箱。
 
-**✅ 对照实验（2026-10-06 16:19，同一条消息并发两条命令，均不带 `dangerouslyDisableSandbox`）**
+**  对照实验（2026-10-06 16:19，同一条消息并发两条命令，均不带 `dangerouslyDisableSandbox`）**
 
 | 组 | 命令内容 | 审计判定 | 弹窗 | `uid_map` | `/dev/bus/usb/003` |
 |---|---|---|---|---|---|
@@ -252,11 +252,11 @@ CMSIS-DAP 在 class `ff` 接口上、**没有 hidraw** → 必须用 libusb 后�
 （判定 = `find` 且实参含 `-delete`，含 `toybox/busybox find` 与经 `env`/`command` 包装的形式），
 `rm` / `find`（无 `-delete`）/ 其它命令一律 `allow`。
 
-**❌ 无效做法（别再试）**：
+**  无效做法（别再试）**：
 - 只带 `dangerouslyDisableSandbox: true` —— 在该客户端"默认放行命令执行"状态下会被**静默丢进沙箱**。
 - 反复重发同一条纯 `pyocd flash` —— 重发多少次都进沙箱（旧的"抽奖"说法就是这么来的误判）。
 - 在沙箱里 `mknod` / `mount devtmpfs` / `umount /dev` —— 见 §0 铁律 1，全是死路。
-- ⚠️ **别指望用 `settings.json` → `sandbox.commandSafety.allow` 白名单来免弹窗**
+-   **别指望用 `settings.json` → `sandbox.commandSafety.allow` 白名单来免弹窗**
   （2026-10-06 16:22 实测 + 源码核实）：该字段只被 `_appendCommandSafetyAllowMatchedAuditLog()` 消费
   —— 命中就写一条 `allow-matched` 审计；**`decideCommandSafety()` 完全不读它**，判定只看
   `commandSafety.ask` + 内置 `builtin:unsafe-find-delete`。
@@ -316,7 +316,7 @@ if (ep /* dangerouslyDisableSandbox */)
   `if(eA.skipPreExecChecks) log("bypassing ExecPolicy allow and legacy pre-exec approval")` ——
   一句同时跳过 ExecPolicy 白名单与 legacy 静默绕过。而 `sandbox.enabled` 的判断
   （`if(!this._isSandboxEnabled(e_)) → direct local execution`）**位于它之前**，所以只有关沙箱能绕开。
-  ⚠️ 但 `sandbox.enabled=false` 仍不阻止 `find … -delete` 的 `ask`（ask 分支更靠前），
+    但 `sandbox.enabled=false` 仍不阻止 `find … -delete` 的 `ask`（ask 分支更靠前），
   所以改用它时应**去掉命令里的 `find -delete`**。
 
 ---
@@ -351,10 +351,10 @@ identical 0 bytes (0 pages) at 15.98 kB/s [loader]
 3. 关键外设 ready（如 `lcd0 attach to spi1 done`、`[ui] dashboard ready`）
 4. 内存池健康（如 `pool after ui: free=116K used=8% frag=1%`）
 
-> ⚠️ banner 里的 `build <日期>` 在增量编译下**可能不更新**（`__DATE__` 停在 version 文件旧时刻），
+>   banner 里的 `build <日期>` 在增量编译下**可能不更新**（`__DATE__` 停在 version 文件旧时刻），
 > **不能单独当判据** —— 要看新增业务 init 行。
 >
-> ⚠️ 烧后首次启动偶见 `rt_object_init assertion`（写 flash 瞬间复位时序问题），再复位一次即好；
+>   烧后首次启动偶见 `rt_object_init assertion`（写 flash 瞬间复位时序问题），再复位一次即好；
 > 连续 3 次重启干净才算稳定。
 
 ---

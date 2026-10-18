@@ -211,12 +211,12 @@ static void lfsmount(int argc, char **argv)
 
     if (spi3_lfs_ensure_mounted() == RT_EOK)
     {
-        rt_kprintf("[lfs] ✅ mounted '%s' at '%s'\n", SPI3_MTD_NAME, mnt);
+        rt_kprintf("[lfs]   mounted '%s' at '%s'\n", SPI3_MTD_NAME, mnt);
         rt_kprintf("[lfs] 试试：ls %s\n", mnt);
     }
     else
     {
-        rt_kprintf("[lfs] ❌ mount 失败\n");
+        rt_kprintf("[lfs]   mount 失败\n");
         rt_kprintf("       若这是第一次用，分区还没格式化 → 跑 lfsformat\n");
         rt_kprintf("       （注意 lfsformat 会清空整片外置 flash！）\n");
     }
@@ -249,7 +249,7 @@ static void lfsformat(int argc, char **argv)
         g_lfs_mounted = RT_FALSE;
     }
 
-    rt_kprintf("[lfs] ⚠️  即将格式化 '%s'（清空整片外置 16MB flash）\n", SPI3_MTD_NAME);
+    rt_kprintf("[lfs]    即将格式化 '%s'（清空整片外置 16MB flash）\n", SPI3_MTD_NAME);
 
     if (dfs_mkfs(LFS_FS_TYPE, SPI3_MTD_NAME) != 0)
     {
@@ -259,7 +259,7 @@ static void lfsformat(int argc, char **argv)
     rt_kprintf("[lfs] mkfs ok\n");
 
     if (spi3_lfs_ensure_mounted() == RT_EOK)
-        rt_kprintf("[lfs] ✅ formatted & mounted at '%s'\n", LFS_MOUNT_POINT);
+        rt_kprintf("[lfs]   formatted & mounted at '%s'\n", LFS_MOUNT_POINT);
     else
         rt_kprintf("[lfs] !! mkfs 后挂载失败\n");
 }
@@ -348,8 +348,8 @@ static void lfstest(int argc, char **argv)
     close(fd);
 
     if (errors == 0)
-        rt_kprintf("[lfs] ✅ PASS: %d bytes 写读一致\n", LFS_TEST_SIZE);
+        rt_kprintf("[lfs]   PASS: %d bytes 写读一致\n", LFS_TEST_SIZE);
     else
-        rt_kprintf("[lfs] ❌ FAIL: %d 字节不符\n", errors);
+        rt_kprintf("[lfs]   FAIL: %d 字节不符\n", errors);
 }
 MSH_CMD_EXPORT(lfstest, LittleFS write/read test: lfstest [path]);

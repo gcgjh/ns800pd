@@ -31,7 +31,7 @@ def worker(name, port):
         s.port = port
         s.baudrate = 115200
         s.timeout = 0.2
-        # ⚠️ 关键：open() 之前设，避免握手线拉低导致对端复位
+        #   关键：open() 之前设，避免握手线拉低导致对端复位
         s.dtr = False
         s.rts = False
         s.hupcl = False

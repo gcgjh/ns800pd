@@ -5,7 +5,7 @@ menu "C3 Bridge 配置"
         default ""
         help
             要连接的 2.4GHz AP 名称。
-            ⚠️ ESP32-C3 只支持 2.4GHz，5GHz 的 SSID 连不上。
+              ESP32-C3 只支持 2.4GHz，5GHz 的 SSID 连不上。
             这里配置而不是硬编码进源码，避免凭据被提交。
 
     config C3_WIFI_PASSWORD
